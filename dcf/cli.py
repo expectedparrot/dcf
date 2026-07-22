@@ -195,6 +195,18 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def repo_counts(repo: DcfRepo) -> dict[str, int]:
+    scenario_names = {record["name"] for record in repo.scenario_records() if "name" in record}
+    session_dir = repo.root / "proposals" / "sessions"
+    session_count = len([path for path in session_dir.iterdir() if path.is_dir()]) if session_dir.exists() else 0
+    return {
+        "assumptions": len(repo.assumption_records()),
+        "scenarios": len(scenario_names),
+        "runs": len(repo.run_records()),
+        "proposal_sessions": session_count,
+    }
+
+
 def handle(args: argparse.Namespace) -> Any:
     repo = DcfRepo.discover(explicit=getattr(args, "dcf_dir", None))
     if args.command != "init" and repo.exists() and not getattr(args, "_locked", False):
